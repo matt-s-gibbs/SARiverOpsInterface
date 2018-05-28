@@ -1,11 +1,13 @@
 library(shiny)
 library(SWTools)
+library(plotly)
+library(dygraphs)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   navbarPage("SA River Ops",
              tabPanel("Config",
-                     "Not sure what this is yet, maybe select QSA setting/function values or something?"
+                     "Not sure what this is yet, maybe select QSA setting/function values or something?\nShow schematic - maybe not, got the model open..."
                       ),
              
              tabPanel("Structures",
@@ -27,23 +29,52 @@ ui <- fluidPage(
                                  selectInput("InputSet","Input Set:",
                                              choices=VeneerGetInputSets()$Name)
                                  ),
-                          column(4,
-                                 h3("Set Thresholds"),
-                                 numericInput("minQ", "Minimum Flow (ML/d):", 2500, min = 0, max = 80000),
-                                 numericInput("criticalDO", "Cricitcal DO (mg/L):", 2, min = 0, max = 12),
-                                 numericInput("adverseDO", "Adverse DO (mg/L):", 4, min = 0, max = 12),
-                                 numericInput("warmup", "Warmup - intial period to ignore (days):", 30, min = 0, max = 365)
+                          column(4,"empty"
                           ),
                           column(4,
                                  h3("Run Model"),
+                                 textInput("RunName","Run Name"),
                                  actionButton("RunSource","Run!"),
-                                 textOutput('RunSource')
+                                 textOutput("SourceReturn")
                                  )
                                  )
                                 )
                       ),
-             tabPanel("Summary Results"),
+             tabPanel("Summary Results",
+                      sidebarLayout(
+                        sidebarPanel(
+                          wellPanel(
+                            h3("Select Run"),
+                          selectInput("SummaryResults","Results:",
+                                      choices="No Source runs available")
+                          ),
+                          wellPanel(
+                          h3("Set Thresholds"),
+                          numericInput("minQ", "Minimum Flow (ML/d):", 2500, min = 0, max = 80000),
+                          numericInput("minDO", "Minimum DO (mg/L):", 2, min = 0, max = 12),
+                          numericInput("warmup", "Warmup - intial period to ignore (days):", 30, min = 0, max = 365)
+                          )#,
+                       #   actionButton("SummaryUpdate","Update Plot") dont think this is necessary, update dynamically
+                        ),
+                        mainPanel(
+                          plotlyOutput("SummaryPlot")
+                        )
+                      )),
              
-             tabPanel("Time Series")
+             tabPanel("Time Series",
+                      sidebarLayout(
+                        sidebarPanel(
+                          radioButtons("TimeseriesVariable","Variables:",
+                                      choices="No Source runs available"),
+                          checkboxGroupInput("TimeseriesResults","Results:",
+                                      choices="No Source runs available")
+                          #Add sites to be able to turn some off. make all selected with selected.
+                        ),
+                        mainPanel(
+                       #   plotlyOutput("TimeseriesPlot") #how to increase the size???
+                          uiOutput("plots")
+                      )
+                      )
+             )
   )
 )
