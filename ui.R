@@ -2,6 +2,7 @@ library(shiny)
 library(SWTools)
 library(plotly)
 library(dygraphs)
+library(rhandsontable)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -14,9 +15,16 @@ ui <- fluidPage(
                     sidebarLayout(
                       sidebarPanel(
                           selectInput("Structures","Structures:",
-                                    choices=VeneerGetNodesbyType("Weir")) #filter to remove some (e.g. woolshed?)
+                                    choices=Structures$Node),
+                          h4("Notes"),
+                          p("Right click to add or remove rows."),
+                          p("Click the column name (Date) to sort in order. This will happen automatically when passed to the model."),
+                          p("Source will extrapolate if it needs to, so make sure the start and end points cover the run period, or that the first and last segments are flat."),
+                          p("If running over a calendar year, include points for 31 Dec and 1 Jan.")
                                      ),
-                          mainPanel("Piecewise"
+                          mainPanel(rHandsontableOutput("tbl"),
+                                    actionButton('writeSourceTable', 'Update Model'),
+                                    plotlyOutput("StructurePlot",height="100%")
                                    )
                                  )
                       ),
@@ -25,14 +33,14 @@ ui <- fluidPage(
                       fluidPage(
                         fluidRow(
                           column(4,
-                                 h3("Select Input Set"),
+                                 h4("Select Input Set"),
                                  selectInput("InputSet","Input Set:",
                                              choices=VeneerGetInputSets()$Name)
                                  ),
                           column(4,"empty"
                           ),
                           column(4,
-                                 h3("Run Model"),
+                                 h4("Run Model"),
                                  textInput("RunName","Run Name"),
                                  actionButton("RunSource","Run!"),
                                  textOutput("SourceReturn")
@@ -44,22 +52,22 @@ ui <- fluidPage(
                       sidebarLayout(
                         sidebarPanel(
                           wellPanel(
-                            h3("Select Run"),
+                            h4("Select Run"),
                           selectInput("SummaryResults","Results:",
                                       choices="No Source runs available")
                           ),
                           wellPanel(
-                          h3("Set Thresholds"),
+                          h4("Set Thresholds"),
                           numericInput("minQ", "Minimum Flow (ML/d):", 2500, min = 0, max = 80000),
                           numericInput("minDO", "Minimum DO (mg/L):", 2, min = 0, max = 12),
+                          numericInput("maxSalt", "Maximum Salinity (mg/L):", 360 , min = 0, max = 480),
                           numericInput("warmup", "Warmup - intial period to ignore (days):", 30, min = 0, max = 365)
                           )#,
-                       #   actionButton("SummaryUpdate","Update Plot") dont think this is necessary, update dynamically
                         ),
                         mainPanel(
-                          plotlyOutput("SummaryPlot")
+                          plotlyOutput("SummaryPlot",height="100%")
                         )
-                      )),
+                       )),
              
              tabPanel("Time Series",
                       sidebarLayout(
@@ -68,10 +76,9 @@ ui <- fluidPage(
                                       choices="No Source runs available"),
                           checkboxGroupInput("TimeseriesResults","Results:",
                                       choices="No Source runs available")
-                          #Add sites to be able to turn some off. make all selected with selected.
+                          #TODO could add sites to be able to turn some off. make all selected with selected.
                         ),
                         mainPanel(
-                       #   plotlyOutput("TimeseriesPlot") #how to increase the size???
                           uiOutput("plots")
                       )
                       )
