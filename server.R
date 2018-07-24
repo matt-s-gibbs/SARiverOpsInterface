@@ -2,10 +2,10 @@ library(SWTools)
 library(plotly)
 library(dygraphs)
 
+source("helpers.R",local=TRUE)
+
 RunLog<<-data.frame(RunNo=integer(),RunName=character())
 data <- reactiveValues()
-
-source("helpers.R",local=TRUE)
 
 server <- function(input, output,session) {
   
@@ -43,6 +43,7 @@ server <- function(input, output,session) {
   observeEvent(input$writeSourceTable, {
     df<-as.data.frame(hot_to_r(input$tbl))
     df$Date<-as.numeric(df$Date)
+    year<-substr(Sys.Date(),1,4)
    df[,1]<-df[,1]-as.numeric(as.Date(paste0(year,"-01-01"))-as.Date("1970-01-01")-1)
   # write.csv(df,"C:\\Source\\table.csv")
    VeneerSetPiecewise(df[order(df$Date),],Structures[which(Structures$Node==input$Structures),]$Table)

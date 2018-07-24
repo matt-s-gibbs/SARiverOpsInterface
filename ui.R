@@ -4,6 +4,9 @@ library(plotly)
 library(dygraphs)
 library(rhandsontable)
 
+source("helpers.R",local=TRUE)
+
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   navbarPage("SA River Ops",
